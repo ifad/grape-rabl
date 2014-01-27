@@ -1,2 +1,2 @@
-object @user => :admin
+object :@user => :admin
 attributes :name

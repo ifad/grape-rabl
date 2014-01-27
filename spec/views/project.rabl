@@ -1,10 +1,8 @@
-object @project => :project
+object :@project
 attributes :name
 
-node :info do
-  partial "partial", object: @project.type
+node :info do |project|
+  partial "partial", object: project.type
 end
 
-child @author => :author do
-  extends "info"
-end
+child(:author, partial: 'info')

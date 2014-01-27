@@ -1,13 +1,13 @@
 require 'spec_helper'
 
-describe Grape::Rabl do
+describe Grape::RablRails do
   subject do
     Class.new(Grape::API)
   end
 
   before do
     subject.format :json
-    subject.formatter :json, Grape::Formatter::Rabl
+    subject.formatter :json, Grape::Formatter::RablRails
     subject.helpers MyHelper
   end
 
@@ -23,20 +23,23 @@ describe Grape::Rabl do
 
   it "should raise error about root directory" do
     begin
-      subject.get("/home", :rabl => true){}
+      subject.get("/home", :rabl => true) { }
       get "/home"
     rescue Exception => e
-      e.message.should include "Use Rack::Config to set 'api.tilt.root' in config.ru"
+      e.message.should include "Use Rack::Config to set 'api.rabl.root' in config.ru"
     end
   end
 
-  context "titl root is setup"  do
+  context "rabl root is setup"  do
     before do
-      subject.before { env["api.tilt.root"] = "#{File.dirname(__FILE__)}/views" }
+      subject.before { env["api.rabl.root"] = "#{File.dirname(__FILE__)}/views" }
     end
 
     describe "helpers" do
+
       it "should execute helper" do
+        pending "not supported yet, needs to add the endpoint.settings[:helpers] to the RablRails::Context"
+
         subject.get("/home", :rabl => "helper") { @user = OpenStruct.new }
         get "/home"
         last_response.body.should == "{\"user\":{\"helper\":\"my_helper\"}}"
@@ -63,34 +66,32 @@ describe Grape::Rabl do
       it "does not save rabl options after called #render method" do
         get("/home")
         get("/about")
-        last_response.body.should == '{"user":{"name":"LTe","project":null}}'
+        last_response.body.should == '{"user":{"name":"LTe","email":null,"project":null}}'
       end
     end
 
 
     it "should respond with proper content-type" do
-      subject.get("/home", :rabl => "user"){}
+      subject.get("/home", :rabl => "empty") {}
       get("/home")
       last_response.headers["Content-Type"].should == "application/json"
     end
 
     it "should not raise error about root directory" do
-      subject.get("/home", :rabl => "user"){}
+      subject.get("/home", :rabl => "empty"){}
       get "/home"
       last_response.status.should == 200
-      last_response.body.should_not include "Use Rack::Config to set 'api.tilt.root' in config.ru"
+      last_response.body.should_not include "Use Rack::Config to set 'api.rabl.root' in config.ru"
     end
 
-    ["user", "user.rabl"].each do |rabl_option|
-      it "should render rabl template (#{rabl_option})" do
-        subject.get("/home", :rabl => rabl_option) do
-          @user = OpenStruct.new(:name => "LTe", :email => "email@example.com")
-          @project = OpenStruct.new(:name => "First")
-        end
-
-        get "/home"
-        last_response.body.should == '{"user":{"name":"LTe","email":"email@example.com","project":{"name":"First"}}}'
+    it "should render rabl template" do
+      subject.get("/home", :rabl => "user") do
+        @user = OpenStruct.new(:name => "LTe", :email => "email@example.com")
+        @project = OpenStruct.new(:name => "First")
       end
+
+      get "/home"
+      last_response.body.should == '{"user":{"name":"LTe","email":"email@example.com","project":{"name":"First"}}}'
     end
   end
 end

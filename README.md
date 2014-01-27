@@ -1,20 +1,20 @@
-# Grape::Rabl
+# Grape::RablRails
 
-Use [Rabl](https://github.com/nesquena/rabl) templates in [Grape](https://github.com/intridea/grape)!
+Use [RablRails](https://github.com/ccocchi/rabl-rails) templates in [Grape](https://github.com/intridea/grape)!
 
-[![Build Status](https://secure.travis-ci.org/LTe/grape-rabl.png)](http://travis-ci.org/LTe/grape-rabl)
-[![Dependency Status](https://gemnasium.com/LTe/grape-rabl.png)](https://gemnasium.com/LTe/grape-rabl)
-[![Code Climate](https://codeclimate.com/github/LTe/grape-rabl.png)](https://codeclimate.com/github/LTe/grape-rabl)
-[![Coverage Status](https://coveralls.io/repos/LTe/grape-rabl/badge.png?branch=master)](https://coveralls.io/r/LTe/grape-rabl?branch=master)
-[![Gem Version](https://badge.fury.io/rb/grape-rabl.png)](http://badge.fury.io/rb/grape-rabl)
+[![Build Status](https://secure.travis-ci.org/ifad/grape-rabl-rails.png)](http://travis-ci.org/ifad/grape-rabl-rails)
+[![Dependency Status](https://gemnasium.com/ifad/grape-rabl-rails.png)](https://gemnasium.com/ifad/grape-rabl-rails)
+[![Code Climate](https://codeclimate.com/github/ifad/grape-rabl-rails.png)](https://codeclimate.com/github/ifad/grape-rabl-rails)
+[![Coverage Status](https://coveralls.io/repos/ifad/grape-rabl-rails/badge.png?branch=master)](https://coveralls.io/r/ifad/grape-rabl-rails?branch=master)
+[![Gem Version](https://badge.fury.io/rb/grape-rabl-rails.png)](http://badge.fury.io/rb/grape-rabl-rails)
 
 ## Installation
 
-Add the `grape` and `grape-rabl` gems to Gemfile.
+Add the `grape` and `grape-rabl-rails` gems to Gemfile.
 
 ```ruby
 gem 'grape'
-gem 'grape-rabl'
+gem 'grape-rabl-rails'
 ```
 
 And then execute:
@@ -23,43 +23,43 @@ And then execute:
 
 ## Usage
 
-### Require grape-rabl
+### Require grape-rabl-rails
 
 ```ruby
 # config.ru
-require 'grape/rabl'
+require 'grape/rabl-rails'
 ```
 
 ### Setup view root directory
 ```ruby
 # config.ru
-require 'grape/rabl'
+require 'grape/rabl-rails'
 
 use Rack::Config do |env|
-  env['api.tilt.root'] = '/path/to/view/root/directory'
+  env['api.rabl.root'] = '/path/to/view/root/directory'
 end
 ```
 
-### Tell your API to use Grape::Formatter::Rabl
+### Tell your API to use Grape::Formatter::RablRails
 
 ```ruby
 class API < Grape::API
   format :json
-  formatter :json, Grape::Formatter::Rabl
+  formatter :json, Grape::Formatter::RablRails
 end
 ```
 
-### Use rabl templates conditionally
+### Use rabl-rails templates conditionally
 
 Add the template name to the API options.
 
 ```ruby
-get "/user/:id", :rabl => "user.rabl" do
+get "/user/:id", :rabl => "user" do
   @user = User.find(params[:id])
 end
 ```
 
-You can use instance variables in the Rabl template.
+You can use instance variables in the RablRails template.
 
 ```ruby
 object @user => :user
@@ -70,28 +70,19 @@ child @project => :project do
 end
 ```
 
-## You can omit .rabl
-
-The following are identical.
-
-```ruby
-get "/home", :rabl => "view"
-get "/home", :rabl => "view.rabl"
-```
-
 ### Example
 
 ```ruby
 # config.ru
-require 'grape/rabl'
+require 'grape/rabl-rails'
 
 use Rack::Config do |env|
-  env['api.tilt.root'] = '/path/to/view/root/directory'
+  env['api.rabl.root'] = '/path/to/view/root/directory'
 end
 
 class UserAPI < Grape::API
   format :json
-  formatter :json, Grape::Formatter::Rabl
+  formatter :json, Grape::Formatter::RablRails
 
   # use rabl with 'user.rabl' template
   get '/user/:id', :rabl => 'user' do
@@ -107,7 +98,7 @@ end
 
 ```ruby
 # user.rabl
-object @user => :user
+object :@user => :user
 
 attributes :name
 ```
@@ -120,7 +111,8 @@ Create grape application
 # app/api/user.rb
 class MyAPI < Grape::API
   format :json
-  formatter :json, Grape::Formatter::Rabl
+  formatter :json, Grape::Formatter::RablRails
+
   get '/user/:id', :rabl => "user" do
     @user = User.find(params[:id])
   end
@@ -129,7 +121,7 @@ end
 
 ```ruby
 # app/views/api/user.rabl
-object @user => :user
+object :@user => :user
 ```
 
 Edit your **config/application.rb** and add view path
@@ -138,7 +130,7 @@ Edit your **config/application.rb** and add view path
 # application.rb
 class Application < Rails::Application
   config.middleware.use(Rack::Config) do |env|
-    env['api.tilt.root'] = Rails.root.join "app", "views", "api"
+    env['api.rabl.root'] = Rails.root.join "app", "views", "api"
   end
 end
 ```
@@ -148,7 +140,7 @@ Mount application to rails router
 ```ruby
 # routes.rb
 GrapeExampleRails::Application.routes.draw do
-  mount MyAPI , :at => "/api"
+  mount MyAPI => "/api"
 end
 ```
 
@@ -157,7 +149,6 @@ end
 See ["Writing Tests"](https://github.com/intridea/grape#writing-tests) in [https://github.com/intridea/grape](grape) README.
 
 Enjoy :)
-
 
 ## Contributing
 
@@ -168,5 +159,5 @@ Enjoy :)
 5. Create new Pull Request
 
 
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/LTe/grape-rabl/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/LTe/grape-rabl-rails/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 

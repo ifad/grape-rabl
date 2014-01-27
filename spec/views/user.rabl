@@ -1,6 +1,6 @@
-object @user => :user
+object :@user
 attributes :name, :email
 
-child @project => :project do
+child :@project do
   attributes :name
 end

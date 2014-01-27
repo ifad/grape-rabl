@@ -8,7 +8,7 @@ require 'coveralls'
 Coveralls.wear!
 
 require 'active_support/core_ext/hash/conversions'
-require 'grape/rabl'
+require 'grape/rabl-rails'
 require 'rspec'
 require 'rack/test'
 require 'ostruct'

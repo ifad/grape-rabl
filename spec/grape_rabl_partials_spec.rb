@@ -1,14 +1,14 @@
 require 'spec_helper'
 
-describe "Grape::Rabl partials" do
+describe "Grape::RablRails partials" do
   subject do
     Class.new(Grape::API)
   end
 
   before do
     subject.format :json
-    subject.formatter :json, Grape::Formatter::Rabl
-    subject.before { env["api.tilt.root"] = "#{File.dirname(__FILE__)}/views" }
+    subject.formatter :json, Grape::Formatter::RablRails
+    subject.before { env["api.rabl.root"] = "#{File.dirname(__FILE__)}/views" }
   end
 
   def app

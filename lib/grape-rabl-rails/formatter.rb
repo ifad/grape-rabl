@@ -1,5 +1,3 @@
-require 'json'
-
 module Grape
   module Formatter
     module RablRails
@@ -8,44 +6,36 @@ module Grape
         attr_reader :env
         attr_reader :endpoint
 
-        def call(object, env)
+        def call(body, env)
 
           @env = env
           @endpoint = env['api.endpoint']
 
-          if rablable?
-            rabl do |template|
-              ::RablRails.render object, template, view_path: env['api.tilt.root'], format: env['api.format']
-            end
+          if (template = rabl_template)
+            ::RablRails.render nil, template,
+              view_path: view_root, format: view_format,
+              locals: endpoint.instance_variables.inject({}) {|h,v|
+                h.update(v.to_s.sub('@', '') => endpoint.instance_variable_get(v))
+              }
           else
-            Grape::Formatter::Json.call object, env
+            Grape::Formatter::Json.call body, env
           end
-
         end
 
         private
 
-          def view_path(template)
-            if template.split(".")[-1] == "rabl"
-              File.join(env['api.tilt.root'], template)
-            else
-              File.join(env['api.tilt.root'], (template + ".rabl"))
-            end
-          end
-
-          def rablable?
-            !! endpoint.options[:route_options][:rabl]
-          end
-
-          def rabl
+          def rabl_template
             template = endpoint.options[:route_options][:rabl]
-            raise "missing rabl template" unless template
-            set_view_root unless env['api.tilt.root']
-            yield template
+            return template if template
           end
 
-          def set_view_root
-            raise "Use Rack::Config to set 'api.tilt.root' in config.ru"
+          def view_root
+            env['api.rabl.root'] or
+              raise "Use Rack::Config to set 'api.rabl.root' in config.ru"
+          end
+
+          def view_format
+            env['api.format']
           end
 
       end

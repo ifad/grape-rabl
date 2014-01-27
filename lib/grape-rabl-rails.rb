@@ -1,5 +1,5 @@
 require "grape"
 require "rabl-rails"
-require "grape-rabl/version"
-require "grape-rabl/formatter"
-require "grape-rabl/render"
+require "grape-rabl-rails/version"
+require "grape-rabl-rails/formatter"
+require "grape-rabl-rails/render"

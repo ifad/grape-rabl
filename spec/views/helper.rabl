@@ -1,3 +1,3 @@
-object @user => :user
+object :@user
 
 node(:helper) { my_helper }

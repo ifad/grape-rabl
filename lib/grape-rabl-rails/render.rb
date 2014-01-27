@@ -8,4 +8,4 @@ module Grape
   end
 end
 
-Grape::Endpoint.send(:include, Grape::Render::RablRails)
+Grape::Endpoint.send(:include, Grape::RablRails::Render)
