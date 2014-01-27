@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 gemspec
 
+gem "grape",      github: "intridea/grape"
 gem "rabl-rails", github: "ifad/rabl-rails"
 
 group :test do
