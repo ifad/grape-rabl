@@ -2,7 +2,7 @@ require 'json'
 
 module Grape
   module Formatter
-    module Rabl
+    module RablRails
       class << self
 
         attr_reader :env
@@ -15,8 +15,7 @@ module Grape
 
           if rablable?
             rabl do |template|
-              engine = ::Tilt.new(view_path(template), {format: env['api.format'], view_path: env['api.tilt.root']})
-              engine.render endpoint, {}
+              ::RablRails.render object, template, view_path: env['api.tilt.root'], format: env['api.format']
             end
           else
             Grape::Formatter::Json.call object, env

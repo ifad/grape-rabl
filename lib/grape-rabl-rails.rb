@@ -1,0 +1,5 @@
+require "grape"
+require "rabl-rails"
+require "grape-rabl/version"
+require "grape-rabl/formatter"
+require "grape-rabl/render"

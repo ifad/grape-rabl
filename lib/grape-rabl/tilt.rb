@@ -1,3 +1,0 @@
-require 'tilt'
-
-Rabl.register!
