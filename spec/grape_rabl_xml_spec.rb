@@ -1,26 +1,15 @@
 require 'spec_helper'
 
 describe Grape::RablRails do
-  subject do
-    Class.new(Grape::API)
-  end
+  subject { Class.new(Grape::API) }
 
   before do
     subject.format :xml
-    subject.formatter :xml, Grape::Formatter::RablRails
-  end
-
-  def app
-    subject
+    subject.formatter :xml, Grape::Formatter::RablRails.new(views: view_root)
+    subject.before { env["api.format"] = :xml }
   end
 
   context "with xml format"  do
-    before do
-      subject.before {
-        env["api.rabl.root"] = "#{File.dirname(__FILE__)}/views"
-        env["api.format"] = :xml
-      }
-    end
 
     it "should respond with proper content-type" do
       subject.get("/home", :rabl => "empty")

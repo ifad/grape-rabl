@@ -1,18 +1,11 @@
 require 'spec_helper'
 
 describe "Grape::RablRails partials" do
-  subject do
-    Class.new(Grape::API)
-  end
+  subject { Class.new(Grape::API) }
 
   before do
     subject.format :json
-    subject.formatter :json, Grape::Formatter::RablRails
-    subject.before { env["api.rabl.root"] = "#{File.dirname(__FILE__)}/views" }
-  end
-
-  def app
-    subject
+    subject.formatter :json, Grape::Formatter::RablRails.new(views: view_root)
   end
 
   it "proper render partials" do

@@ -15,6 +15,16 @@ require 'ostruct'
 
 RSpec.configure do |config|
   config.include Rack::Test::Methods
+
+  config.include(Module.new do
+    def view_root
+      File.join(File.dirname(__FILE__), 'views')
+    end
+
+    def app
+      subject
+    end
+  end)
 end
 
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}

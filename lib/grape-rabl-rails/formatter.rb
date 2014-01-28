@@ -1,44 +1,104 @@
 module Grape
   module Formatter
-    module RablRails
-      class << self
+    class RablRails
 
-        attr_reader :env
-        attr_reader :endpoint
+      def initialize(options)
+        @view_root = options.fetch(:views).dup.freeze
+        self.freeze
 
-        def call(body, env)
+      rescue KeyError => e
+        raise ConfigurationError, e.message
+      end
 
-          @env = env
-          @endpoint = env['api.endpoint']
+      def call(block_retval, env)
+        if (template = extract_template(env))
+          Library.on_view_root(@view_root) do
+            Library.instance.render template, context: env['api.endpoint'], format: env['api.format']
+          end
+        else
+          Grape::Formatter::Json.call block_retval, env
+        end
+      end
 
-          if (template = rabl_template)
-            ::RablRails.render nil, template,
-              view_path: view_root, format: view_format,
-              locals: endpoint.instance_variables.inject({}) {|h,v|
-                h.update(v.to_s.sub('@', '') => endpoint.instance_variable_get(v))
-              }
+      private
+
+      def extract_template(env)
+        template = env['api.endpoint'].options[:route_options][:rabl]
+        return unless template
+        template  = template.to_s
+      end
+
+      # Re-implement RablRails Library for now - better solutions have to be
+      # envisioned by refactoring RablRails' Library itself and decoupling it
+      # from Rails' internals.
+      #
+      class Library
+        # HACK override RablRails' Library for now
+        ::RablRails::Library = self
+
+        include Singleton
+
+        def initialize
+          @cache = {}
+        end
+
+        def render(template, options)
+          template = compile(template)
+          format   = options.fetch(:format, 'JSON').to_s.upcase
+          context  = options.fetch(:context)
+
+          ::RablRails::Renderers.const_get(format).new(context).render(template)
+        end
+
+        def compile(template)
+          path = _lookup(template)
+
+          if ::RablRails.cache_templates?
+            (@cache[path] ||= _compile(path)).dup
           else
-            Grape::Formatter::Json.call body, env
+            _compile(path)
           end
         end
 
+        # Compatibility for Partial rendering
+        alias :compile_template_from_path :compile
+
         private
+        def _compile(path)
+          ::RablRails::Compiler.new.compile_source(File.read(path))
 
-          def rabl_template
-            template = endpoint.options[:route_options][:rabl]
-            return template if template
-          end
+        rescue Errno::ENOENT
+          raise TemplateNotFound.new(path)
+        end
 
-          def view_root
-            env['api.rabl.root'] or
-              raise "Use Rack::Config to set 'api.rabl.root' in config.ru"
-          end
+        def _lookup(template)
+          template += '.rabl' unless template =~ /\.rabl\Z/
+          File.join(Thread.current['grape.rabl.root'], template)
+        end
 
-          def view_format
-            env['api.format']
-          end
-
+        def self.on_view_root(root)
+          # Better this than having race conditions due
+          # to instance variables in the Singleton
+          Thread.current['grape.rabl.root'] = root
+          yield
+        ensure
+          Thread.current['grape.rabl.root'] = nil
+        end
       end
+
+      class ConfigurationError < StandardError
+      end
+
+      class TemplateNotFound < StandardError
+        def initialize(path)
+          @path = path
+        end
+
+        def message
+          "Template not found: #@path"
+        end
+      end
+
     end
   end
 end

@@ -23,29 +23,14 @@ And then execute:
 
 ## Usage
 
-### Require grape-rabl-rails
-
-```ruby
-# config.ru
-require 'grape/rabl-rails'
-```
-
-### Setup view root directory
-```ruby
-# config.ru
-require 'grape/rabl-rails'
-
-use Rack::Config do |env|
-  env['api.rabl.root'] = '/path/to/view/root/directory'
-end
-```
-
 ### Tell your API to use Grape::Formatter::RablRails
 
 ```ruby
+require 'grape/rabl-rails'
+
 class API < Grape::API
   format :json
-  formatter :json, Grape::Formatter::RablRails
+  formatter :json, Grape::Formatter::RablRails.new(views: 'views/api')
 end
 ```
 
@@ -62,10 +47,10 @@ end
 You can use instance variables in the RablRails template.
 
 ```ruby
-object @user => :user
+object :@user
 attributes :name, :email
 
-child @project => :project do
+child :@project do
   attributes :name
 end
 ```
@@ -76,13 +61,9 @@ end
 # config.ru
 require 'grape/rabl-rails'
 
-use Rack::Config do |env|
-  env['api.rabl.root'] = '/path/to/view/root/directory'
-end
-
 class UserAPI < Grape::API
   format :json
-  formatter :json, Grape::Formatter::RablRails
+  formatter :json, Grape::Formatter::RablRails.new(views: '/path/to/view/root')
 
   # use rabl with 'user.rabl' template
   get '/user/:id', :rabl => 'user' do
@@ -98,7 +79,7 @@ end
 
 ```ruby
 # user.rabl
-object :@user => :user
+object :@user
 
 attributes :name
 ```
@@ -111,7 +92,7 @@ Create grape application
 # app/api/user.rb
 class MyAPI < Grape::API
   format :json
-  formatter :json, Grape::Formatter::RablRails
+  formatter :json, Grape::Formatter::RablRails.new(views: Rails.root.join("app/views/api"))
 
   get '/user/:id', :rabl => "user" do
     @user = User.find(params[:id])
@@ -122,17 +103,6 @@ end
 ```ruby
 # app/views/api/user.rabl
 object :@user => :user
-```
-
-Edit your **config/application.rb** and add view path
-
-```ruby
-# application.rb
-class Application < Rails::Application
-  config.middleware.use(Rack::Config) do |env|
-    env['api.rabl.root'] = Rails.root.join "app", "views", "api"
-  end
-end
 ```
 
 Mount application to rails router

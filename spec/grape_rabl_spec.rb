@@ -1,18 +1,12 @@
 require 'spec_helper'
 
 describe Grape::RablRails do
-  subject do
-    Class.new(Grape::API)
-  end
+  subject { Class.new(Grape::API) }
 
   before do
     subject.format :json
-    subject.formatter :json, Grape::Formatter::RablRails
+    subject.formatter :json, Grape::Formatter::RablRails.new(views: view_root)
     subject.helpers MyHelper
-  end
-
-  def app
-    subject
   end
 
   it 'should work without rabl template' do
@@ -21,24 +15,8 @@ describe Grape::RablRails do
     last_response.body.should == "\"Hello World\""
   end
 
-  it "should raise error about root directory" do
-    begin
-      subject.get("/home", :rabl => true) { }
-      get "/home"
-    rescue Exception => e
-      e.message.should include "Use Rack::Config to set 'api.rabl.root' in config.ru"
-    end
-  end
-
-  context "rabl root is setup"  do
-    before do
-      subject.before { env["api.rabl.root"] = "#{File.dirname(__FILE__)}/views" }
-    end
-
     describe "helpers" do
-
       it "should execute helper" do
-        pending "not supported yet, needs to add the endpoint.settings[:helpers] to the RablRails::Context"
 
         subject.get("/home", :rabl => "helper") { @user = OpenStruct.new }
         get "/home"
@@ -77,11 +55,10 @@ describe Grape::RablRails do
       last_response.headers["Content-Type"].should == "application/json"
     end
 
-    it "should not raise error about root directory" do
-      subject.get("/home", :rabl => "empty"){}
+    it "should be successful" do
+      subject.get("/home", :rabl => "empty") {}
       get "/home"
       last_response.status.should == 200
-      last_response.body.should_not include "Use Rack::Config to set 'api.rabl.root' in config.ru"
     end
 
     it "should render rabl template" do
@@ -93,5 +70,5 @@ describe Grape::RablRails do
       get "/home"
       last_response.body.should == '{"user":{"name":"LTe","email":"email@example.com","project":{"name":"First"}}}'
     end
-  end
+
 end
