@@ -6,7 +6,6 @@ Use [RablRails](https://github.com/ccocchi/rabl-rails) templates in [Grape](http
 [![Dependency Status](https://gemnasium.com/ifad/grape-rabl-rails.png)](https://gemnasium.com/ifad/grape-rabl-rails)
 [![Code Climate](https://codeclimate.com/github/ifad/grape-rabl-rails.png)](https://codeclimate.com/github/ifad/grape-rabl-rails)
 [![Coverage Status](https://coveralls.io/repos/ifad/grape-rabl-rails/badge.png?branch=master)](https://coveralls.io/r/ifad/grape-rabl-rails?branch=master)
-[![Gem Version](https://badge.fury.io/rb/grape-rabl-rails.png)](http://badge.fury.io/rb/grape-rabl-rails)
 
 ## Installation
 
@@ -127,7 +126,4 @@ Enjoy :)
 3. Commit your changes (`git commit -am 'Added some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
-
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/LTe/grape-rabl-rails/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
