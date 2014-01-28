@@ -11,5 +11,8 @@ group :test do
   gem "rack-test"
   gem "rake"
   gem "coveralls", require: false
+end
+
+platform :ruby do
   gem RUBY_VERSION.to_f >= 2.0 ? "byebug" : "debugger"
 end
