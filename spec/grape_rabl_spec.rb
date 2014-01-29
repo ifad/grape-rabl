@@ -128,14 +128,22 @@ describe Grape::RablRails do
     end
   end
 
-  it "generates the @result instance variable" do
-    subject.get '/automagic', rabl: 'result' do
-      OpenStruct.new(:name => 'lleir', :coolness => 'uber')
+  context 'the @result instance variable' do
+    before do
+      subject.get '/automagic', rabl: 'result' do
+        OpenStruct.new(:name => 'lleir', :coolness => 'uber')
+      end
     end
 
-    get '/automagic'
-    last_response.body.should == '{"user":{"name":"lleir","coolness":"uber"}}'
-  end
+    it 'yields correct json' do
+      get '/automagic.json'
+      last_response.body.should == '{"user":{"name":"lleir","coolness":"uber"}}'
+    end
 
+    it 'yields correct xml root' do
+      get '/automagic.xml'
+      last_response.body.should == "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<user>\n  <name>lleir</name>\n  <coolness>uber</coolness>\n</user>\n"
+    end
+  end
 
 end
