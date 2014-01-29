@@ -15,6 +15,7 @@ module Grape
 
         if (template = extract_template(endpoint))
           Library.on_view_root(@view_root) do
+            endpoint.instance_variable_set(:@result, block_retval)
             Library.instance.render template, context: endpoint, format: format
           end
         else

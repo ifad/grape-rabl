@@ -128,4 +128,14 @@ describe Grape::RablRails do
     end
   end
 
+  it "generates the @result instance variable" do
+    subject.get '/automagic', rabl: 'result' do
+      OpenStruct.new(:name => 'lleir', :coolness => 'uber')
+    end
+
+    get '/automagic'
+    last_response.body.should == '{"user":{"name":"lleir","coolness":"uber"}}'
+  end
+
+
 end

@@ -2,6 +2,8 @@
 
 * Make namespaces automatically namespace also view path
 * Allow setting rabl template name on namespaces
+* Add automagic `@result` instance variable, to avoid setting them
+  explicitly when you need only one.
 
 #### v0.1.0
 
