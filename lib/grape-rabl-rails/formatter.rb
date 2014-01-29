@@ -11,12 +11,15 @@ module Grape
       end
 
       def call(block_retval, env)
+        format, endpoint = env.values_at *%w(api.format api.endpoint)
+
         if (template = extract_template(env))
           Library.on_view_root(@view_root) do
-            Library.instance.render template, context: env['api.endpoint'], format: env['api.format']
+            Library.instance.render template, context: endpoint, format: format
           end
         else
-          Grape::Formatter::Json.call block_retval, env
+          fallback = Grape::Formatter.const_get(format.to_s.capitalize)
+          fallback.call(block_retval, env)
         end
       end
 

@@ -4,15 +4,22 @@ describe Grape::RablRails do
   subject { Class.new(Grape::API) }
 
   before do
-    subject.format :json
+    subject.default_format :json
     subject.formatter :json, Grape::Formatter::RablRails.new(views: view_root)
+    subject.formatter :xml , Grape::Formatter::RablRails.new(views: view_root)
     subject.helpers MyHelper
   end
 
-  it 'should work without rabl template' do
+  it 'should work without rabl template and yield json by default' do
     subject.get("/home") {"Hello World"}
     get "/home"
     last_response.body.should == "\"Hello World\""
+  end
+
+  it 'should work without rabl template and yield xml if requested' do
+    subject.get("/home") { Hash[hello: :world] }
+    get "/home.xml"
+    last_response.body.should == "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<hash>\n  <hello type=\"symbol\">world</hello>\n</hash>\n"
   end
 
   describe "helpers" do
