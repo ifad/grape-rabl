@@ -86,9 +86,25 @@ describe Grape::RablRails do
         end
       end
 
-      get '/foo/bar' do
-        last_response.body.should == '{"quux":{"fooed":"yay","bared":"nay"}}'
+      get '/foo/bar'
+      last_response.body.should == '{"quux":{"fooed":"yay","bared":"nay"}}'
+    end
+
+    it "allows setting the rabl template name on the namespace" do
+      subject.namespace :foo, rabl: 'bar' do
+        get '/foo' do
+          @quux = OpenStruct.new(:fooed => 'yay', :bared => 'nay')
+        end
+        get '/bar' do
+          @quux = OpenStruct.new(:fooed => 'nay', :bared => 'yay')
+        end
       end
+
+      get '/foo/foo'
+      last_response.body.should == '{"quux":{"fooed":"yay","bared":"nay"}}'
+
+      get '/foo/bar'
+      last_response.body.should == '{"quux":{"fooed":"nay","bared":"yay"}}'
     end
   end
 
