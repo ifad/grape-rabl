@@ -1,5 +1,7 @@
 # Grape::RablRails
 
+**DISCLAIMER: CURRENTLY UNDER DEVELOPMENT**
+
 Use [RablRails](https://github.com/ccocchi/rabl-rails) templates in [Grape](https://github.com/intridea/grape)!
 
 [![Build Status](https://secure.travis-ci.org/ifad/grape-rabl-rails.png)](http://travis-ci.org/ifad/grape-rabl-rails)
@@ -39,11 +41,25 @@ Add the template name to the API options.
 
 ```ruby
 get "/user/:id", :rabl => "user" do
-  @user = User.find(params[:id])
+  User.find(params[:id])
 end
 ```
 
-You can use instance variables in the RablRails template.
+The block's return value is stored in the @result instance variable for you
+
+```ruby
+object :@result => :user
+attributes :name, :email
+```
+
+Or you can define your instance variables for yourself, of course
+
+```ruby
+get "/project/:project_id/users/:id", :rabl => "user" do
+  @project = Project.find(params[:project_id])
+  @user = User.find(params[:id])
+end
+```
 
 ```ruby
 object :@user
@@ -54,7 +70,7 @@ child :@project do
 end
 ```
 
-### Example
+### Full Example
 
 ```ruby
 # config.ru
