@@ -1,6 +1,7 @@
 #### v0.2.0 (unreleased)
 
 * Make namespaces automatically namespace also view path
+* Allow setting rabl template name on namespaces
 
 #### v0.1.0
 

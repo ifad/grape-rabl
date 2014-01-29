@@ -26,16 +26,15 @@ module Grape
       private
 
       def extract_template(endpoint)
+        template  = endpoint.options[:route_options][:rabl]
+
         namespace = endpoint.settings[:namespace]
-        template  = endpoint.options[:route_options][:rabl] ||
-          namespace && namespace.options[:rabl]
+        template  = namespace && namespace.options[:rabl] if template.nil?
 
         return unless template
         template = template.to_s
 
-        if namespace
-          template = [namespace.space, template].join('/')
-        end
+        template = [namespace.space, template].join('/') if namespace
 
         return template
       end

@@ -90,21 +90,41 @@ describe Grape::RablRails do
       last_response.body.should == '{"quux":{"fooed":"yay","bared":"nay"}}'
     end
 
-    it "allows setting the rabl template name on the namespace" do
-      subject.namespace :foo, rabl: 'bar' do
-        get '/foo' do
-          @quux = OpenStruct.new(:fooed => 'yay', :bared => 'nay')
-        end
-        get '/bar' do
-          @quux = OpenStruct.new(:fooed => 'nay', :bared => 'yay')
+    context "with multiple actions" do
+      before do
+        subject.namespace :foo, rabl: 'bar' do
+          get '/foo' do
+            @quux = OpenStruct.new(:fooed => 'yay', :bared => 'nay')
+          end
+          get '/bar' do
+            @quux = OpenStruct.new(:fooed => 'nay', :bared => 'yay')
+          end
+          get '/ping', rabl: false do
+            'pong'
+          end
+          get '/admin', rabl: 'user' do
+            @user = OpenStruct.new(:name => 'vjt', :fooity => 42)
+          end
         end
       end
 
-      get '/foo/foo'
-      last_response.body.should == '{"quux":{"fooed":"yay","bared":"nay"}}'
+      it "allows setting the rabl template name on the namespace" do
+        get '/foo/foo'
+        last_response.body.should == '{"quux":{"fooed":"yay","bared":"nay"}}'
 
-      get '/foo/bar'
-      last_response.body.should == '{"quux":{"fooed":"nay","bared":"yay"}}'
+        get '/foo/bar'
+        last_response.body.should == '{"quux":{"fooed":"nay","bared":"yay"}}'
+      end
+
+      it "allows disabling rabl on an action" do
+        get '/foo/ping'
+        last_response.body.should == '"pong"'
+      end
+
+      it "allows specifying a different template on an action" do
+        get '/foo/admin'
+        last_response.body.should == '{"user":{"name":"vjt","fooity":42}}'
+      end
     end
   end
 
