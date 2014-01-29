@@ -78,4 +78,18 @@ describe Grape::RablRails do
     last_response.body.should == '{"user":{"name":"LTe","email":"email@example.com","project":{"name":"First"}}}'
   end
 
+  context "a grape namespace" do
+    it "namespaces the rabl view path" do
+      subject.namespace :foo do
+        get '/bar', rabl: 'bar' do
+          @quux = OpenStruct.new(:fooed => 'yay', :bared => 'nay')
+        end
+      end
+
+      get '/foo/bar' do
+        last_response.body.should == '{"quux":{"fooed":"yay","bared":"nay"}}'
+      end
+    end
+  end
+
 end

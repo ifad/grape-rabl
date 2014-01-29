@@ -1,3 +1,7 @@
+#### v0.2.0 (unreleased)
+
+* Make namespaces automatically namespace also view path
+
 #### v0.1.0
 
 * Initial public release [@ifad](https://github.com/ifad/grape-rabl-rails),

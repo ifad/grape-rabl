@@ -64,20 +64,23 @@ class UserAPI < Grape::API
   format :json
   formatter :json, Grape::Formatter::RablRails.new(views: '/path/to/view/root')
 
-  # use rabl with 'user.rabl' template
-  get '/user/:id', :rabl => 'user' do
-    @user = User.find(params[:id])
+  namespace :users do
+    # do not use rabl, fallback to the defalut Grape formatter
+    get '/' do
+      User.all
+    end
+
+    # use rabl with 'user.rabl' template
+    get '/:id', :rabl => 'user' do
+      @user = User.find(params[:id])
+    end
   end
 
-  # do not use rabl, fallback to the defalt Grape JSON formatter
-  get '/users' do
-    User.all
-  end
 end
 ```
 
 ```ruby
-# user.rabl
+# users/user.rabl
 object :@user
 
 attributes :name
