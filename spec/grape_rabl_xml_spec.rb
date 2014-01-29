@@ -4,9 +4,8 @@ describe Grape::RablRails do
   subject { Class.new(Grape::API) }
 
   before do
-    subject.format :xml
+    subject.default_format :xml
     subject.formatter :xml, Grape::Formatter::RablRails.new(views: view_root)
-    subject.before { env["api.format"] = :xml }
   end
 
   context "with xml format"  do
