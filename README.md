@@ -45,8 +45,8 @@ get "/user/:id", rabl: "user" do
 end
 ```
 
-If the return value includes [ActiveModel::Conversion](http://api.rubyonrails.org/classes/ActiveModel/Conversion.html) and the template
-naming convetion id followed, then it is going to be found automatically.
+If the return value includes [ActiveModel::Conversion](http://api.rubyonrails.org/classes/ActiveModel/Conversion.html)
+and the template naming convention is followed, then it is going to be found automatically.
 
 ```ruby
 get "/user/:id" do
