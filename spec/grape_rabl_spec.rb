@@ -25,7 +25,7 @@ describe Grape::RablRails do
   describe "helpers" do
     it "should execute helper" do
 
-      subject.get("/home", :rabl => "helper") { @user = OpenStruct.new }
+      subject.get("/home", rabl: "helper") { @user = OpenStruct.new }
       get "/home"
       last_response.body.should == "{\"user\":{\"helper\":\"my_helper\"}}"
     end
@@ -33,13 +33,13 @@ describe Grape::RablRails do
 
   describe "#render" do
     before do
-      subject.get("/home", :rabl => "user") do
-        @user = OpenStruct.new(:name => "LTe")
-        render :rabl => "admin"
+      subject.get("/home", rabl: "user") do
+        @user = OpenStruct.new(name: "LTe")
+        render rabl: "admin"
       end
 
-      subject.get("/about", :rabl => "user") do
-        @user = OpenStruct.new(:name => "LTe")
+      subject.get("/about", rabl: "user") do
+        @user = OpenStruct.new(name: "LTe")
       end
     end
 
@@ -57,21 +57,21 @@ describe Grape::RablRails do
 
 
   it "should respond with proper content-type" do
-    subject.get("/home", :rabl => "empty") {}
+    subject.get("/home", rabl: "empty") {}
     get("/home")
     last_response.headers["Content-Type"].should == "application/json"
   end
 
   it "should be successful" do
-    subject.get("/home", :rabl => "empty") {}
+    subject.get("/home", rabl: "empty") {}
     get "/home"
     last_response.status.should == 200
   end
 
   it "should render rabl template" do
-    subject.get("/home", :rabl => "user") do
-      @user = OpenStruct.new(:name => "LTe", :email => "email@example.com")
-      @project = OpenStruct.new(:name => "First")
+    subject.get("/home", rabl: "user") do
+      @user = OpenStruct.new(name: "LTe", email: "email@example.com")
+      @project = OpenStruct.new(name: "First")
     end
 
     get "/home"
@@ -82,7 +82,7 @@ describe Grape::RablRails do
     it "namespaces the rabl view path" do
       subject.namespace :foo do
         get '/bar', rabl: 'bar' do
-          @quux = OpenStruct.new(:fooed => 'yay', :bared => 'nay')
+          @quux = OpenStruct.new(fooed: 'yay', bared: 'nay')
         end
       end
 
@@ -94,16 +94,16 @@ describe Grape::RablRails do
       before do
         subject.namespace :foo, rabl: 'bar' do
           get '/foo' do
-            @quux = OpenStruct.new(:fooed => 'yay', :bared => 'nay')
+            @quux = OpenStruct.new(fooed: 'yay', bared: 'nay')
           end
           get '/bar' do
-            @quux = OpenStruct.new(:fooed => 'nay', :bared => 'yay')
+            @quux = OpenStruct.new(fooed: 'nay', bared: 'yay')
           end
           get '/ping', rabl: false do
             'pong'
           end
           get '/admin', rabl: 'user' do
-            @user = OpenStruct.new(:name => 'vjt', :fooity => 42)
+            @user = OpenStruct.new(name: 'vjt', fooity: 42)
           end
         end
       end
@@ -129,20 +129,70 @@ describe Grape::RablRails do
   end
 
   context 'the @result instance variable' do
-    before do
-      subject.get '/automagic', rabl: 'result' do
-        OpenStruct.new(:name => 'lleir', :coolness => 'uber')
+    context 'explicit template declaration' do
+      before do
+        subject.get '/automagic', rabl: 'result' do
+          OpenStruct.new(name: 'lleir', coolness: 'uber')
+        end
+      end
+
+      it 'yields correct json' do
+        get '/automagic.json'
+        last_response.body.should == '{"user":{"name":"lleir","coolness":"uber"}}'
+      end
+
+      it 'yields correct xml root' do
+        get '/automagic.xml'
+        last_response.body.should == "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<user>\n  <name>lleir</name>\n  <coolness>uber</coolness>\n</user>\n"
       end
     end
 
-    it 'yields correct json' do
-      get '/automagic.json'
-      last_response.body.should == '{"user":{"name":"lleir","coolness":"uber"}}'
-    end
+    context 'implicit template declaration' do
+      before do
+        require 'active_model'
 
-    it 'yields correct xml root' do
-      get '/automagic.xml'
-      last_response.body.should == "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<user>\n  <name>lleir</name>\n  <coolness>uber</coolness>\n</user>\n"
+        class Result < OpenStruct
+          include ActiveModel::Conversion
+        end
+      end
+
+      context 'without namespace' do
+        before do
+          subject.get '/automagic' do
+            Result.new(name: 'lleir', coolness: 'uber', passion: 'food')
+          end
+        end
+
+        it 'yields correct json' do
+          get '/automagic.json'
+          last_response.body.should == '{"user":{"name":"lleir","coolness":"uber","passion":"food"}}'
+        end
+
+        it 'yields correct xml root' do
+          get '/automagic.xml'
+          last_response.body.should == "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<user>\n  <name>lleir</name>\n  <coolness>uber</coolness>\n  <passion>food</passion>\n</user>\n"
+        end
+      end
+
+      context 'with namespace' do
+        before do
+          subject.namespace :foo do
+            get '/automagic' do
+              Result.new(name: 'lleir', coolness: 'uber', level: '1337')
+            end
+          end
+        end
+
+        it 'yields correct json' do
+          get '/foo/automagic.json'
+          last_response.body.should == '{"user":{"name":"lleir","coolness":"uber","level":"1337"}}'
+        end
+
+        it 'yields correct xml root' do
+          get '/foo/automagic.xml'
+          last_response.body.should == "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<user>\n  <name>lleir</name>\n  <coolness>uber</coolness>\n  <level>1337</level>\n</user>\n"
+        end
+      end
     end
   end
 

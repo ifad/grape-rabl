@@ -11,15 +11,15 @@ describe Grape::RablRails do
   context "with xml format"  do
 
     it "should respond with proper content-type" do
-      subject.get("/home", :rabl => "empty")
+      subject.get("/home", rabl: "empty")
       get("/home")
       last_response.headers["Content-Type"].should == "application/xml"
     end
 
     it "should render rabl template" do
-      subject.get("/home", :rabl => :user) do
-        @user = OpenStruct.new(:name => "LTe", :email => "email@example.com")
-        @project = OpenStruct.new(:name => "First")
+      subject.get("/home", rabl: :user) do
+        @user = OpenStruct.new(name: "LTe", email: "email@example.com")
+        @project = OpenStruct.new(name: "First")
       end
 
       get "/home"

@@ -40,12 +40,21 @@ end
 Add the template name to the API options.
 
 ```ruby
-get "/user/:id", :rabl => "user" do
+get "/user/:id", rabl: "user" do
   User.find(params[:id])
 end
 ```
 
-The block's return value is stored in the @result instance variable for you
+If the return value includes [ActiveModel::Conversion](http://api.rubyonrails.org/classes/ActiveModel/Conversion.html) and the template
+naming convetion id followed, then it is going to be found automatically.
+
+```ruby
+get "/user/:id" do
+  User.find(params[:id])
+end
+```
+
+The block's return value is stored in the @result instance variable for you.
 
 ```ruby
 object :@result => :user
@@ -55,7 +64,7 @@ attributes :name, :email
 Or you can define your instance variables for yourself, of course
 
 ```ruby
-get "/project/:project_id/users/:id", :rabl => "user" do
+get "/project/:project_id/users/:id", rabl: "user" do
   @project = Project.find(params[:project_id])
   @user = User.find(params[:id])
 end
@@ -87,7 +96,7 @@ class UserAPI < Grape::API
     end
 
     # use rabl with 'user.rabl' template
-    get '/:id', :rabl => 'user' do
+    get '/:id', rabl: 'user' do
       @user = User.find(params[:id])
     end
   end
@@ -112,7 +121,7 @@ class MyAPI < Grape::API
   format :json
   formatter :json, Grape::Formatter::RablRails.new(views: Rails.root.join("app/views/api"))
 
-  get '/user/:id', :rabl => "user" do
+  get '/user/:id', rabl: "user" do
     @user = User.find(params[:id])
   end
 end

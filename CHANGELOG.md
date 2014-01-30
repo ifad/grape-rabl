@@ -4,6 +4,8 @@
 * Allow setting rabl template name on namespaces
 * Add automagic `@result` instance variable, to avoid setting them
   explicitly when you need only one.
+* Automatically find templates for result objects that include
+  [ActiveModel::Conversion](http://api.rubyonrails.org/classes/ActiveModel/Conversion.html)
 
 #### v0.1.0
 

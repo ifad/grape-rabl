@@ -9,10 +9,10 @@ describe "Grape::RablRails partials" do
   end
 
   it "proper render partials" do
-    subject.get("/home", :rabl => "project") do
-      @author   = OpenStruct.new(:author => "LTe")
-      @type     = OpenStruct.new(:type => "paper")
-      @project  = OpenStruct.new(:name => "First", :type => @type, :author => @author)
+    subject.get("/home", rabl: "project") do
+      @author   = OpenStruct.new(author: "LTe")
+      @type     = OpenStruct.new(type: "paper")
+      @project  = OpenStruct.new(name: "First", type: @type, author: @author)
     end
 
     get("/home")

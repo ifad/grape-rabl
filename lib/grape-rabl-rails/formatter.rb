@@ -13,9 +13,10 @@ module Grape
       def call(block_retval, env)
         format, endpoint = env.values_at *%w(api.format api.endpoint)
 
+        endpoint.instance_variable_set(:@result, block_retval)
+
         if (template = extract_template(endpoint))
           Library.on_view_root(@view_root) do
-            endpoint.instance_variable_set(:@result, block_retval)
             Library.instance.render template, context: endpoint, format: format
           end
         else
@@ -27,17 +28,23 @@ module Grape
       private
 
       def extract_template(endpoint)
-        template  = endpoint.options[:route_options][:rabl]
+        namespace, template = []
 
-        namespace = endpoint.settings[:namespace]
-        template  = namespace && namespace.options[:rabl] if template.nil?
+        if (result = endpoint.instance_variable_get(:@result)).respond_to?(:to_partial_path)
+          ns, template = result.to_partial_path.split('/')
+          namespace    = ::Grape::Namespace.new(ns)
+        end
 
-        return unless template
-        template = template.to_s
+        if ns = endpoint.settings[:namespace]
+          namespace = ns
+          template  = namespace.options[:rabl] if namespace.options.has_key?(:rabl)
+        end
 
-        template = [namespace.space, template].join('/') if namespace
+        if (o = endpoint.options[:route_options]).has_key?(:rabl)
+          template = o[:rabl]
+        end
 
-        return template
+        return template && [namespace && namespace.space, template.to_s].compact.join('/')
       end
 
       # Re-implement RablRails Library for now - better solutions have to be
