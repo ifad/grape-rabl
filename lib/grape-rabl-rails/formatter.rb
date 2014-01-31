@@ -76,7 +76,7 @@ module Grape
         end
 
         def compile(template)
-          path = _lookup(template)
+          path = _lookup(template.to_s)
 
           if ::RablRails.cache_templates?
             (@cache[path] ||= _compile(path)).dup
