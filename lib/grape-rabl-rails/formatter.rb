@@ -37,7 +37,9 @@ module Grape
         template ||= extract_from_namespace(namespace)
         return unless template
 
-        if namespace
+        # Concatenate the namespace, unless the template starts with '/'
+        #
+        if namespace && template[0] != '/'
           template = File.join(namespace.space, template)
         end
 

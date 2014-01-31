@@ -90,6 +90,18 @@ describe Grape::RablRails do
       last_response.body.should == '{"quux":{"fooed":"yay","bared":"nay"}}'
     end
 
+    it "doesn't namespace the rabl view path if the template in route options starts with /" do
+      subject.namespace :foo do
+        get '/user', rabl: '/user' do
+          @user = OpenStruct.new(name: 'Lleir', email: 'foo@example.com')
+          @project = OpenStruct.new(name: 'brunello')
+        end
+      end
+
+      get '/foo/user'
+      last_response.body.should == '{"user":{"name":"Lleir","email":"foo@example.com","project":{"name":"brunello"}}}'
+    end
+
     context "with multiple actions" do
       before do
         subject.namespace :foo, rabl: 'bar' do
