@@ -146,54 +146,6 @@ describe Grape::RablRails do
         last_response.body.should == "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<user>\n  <name>lleir</name>\n  <coolness>uber</coolness>\n</user>\n"
       end
     end
-
-    context 'implicit template declaration' do
-      before do
-        require 'active_model'
-
-        class Result < OpenStruct
-          include ActiveModel::Conversion
-        end
-      end
-
-      context 'without namespace' do
-        before do
-          subject.get '/automagic' do
-            Result.new(name: 'lleir', coolness: 'uber', passion: 'food')
-          end
-        end
-
-        it 'yields correct json' do
-          get '/automagic.json'
-          last_response.body.should == '{"user":{"name":"lleir","coolness":"uber","passion":"food"}}'
-        end
-
-        it 'yields correct xml root' do
-          get '/automagic.xml'
-          last_response.body.should == "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<user>\n  <name>lleir</name>\n  <coolness>uber</coolness>\n  <passion>food</passion>\n</user>\n"
-        end
-      end
-
-      context 'with namespace' do
-        before do
-          subject.namespace :foo do
-            get '/automagic' do
-              Result.new(name: 'lleir', coolness: 'uber', level: '1337')
-            end
-          end
-        end
-
-        it 'yields correct json' do
-          get '/foo/automagic.json'
-          last_response.body.should == '{"user":{"name":"lleir","coolness":"uber","level":"1337"}}'
-        end
-
-        it 'yields correct xml root' do
-          get '/foo/automagic.xml'
-          last_response.body.should == "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<user>\n  <name>lleir</name>\n  <coolness>uber</coolness>\n  <level>1337</level>\n</user>\n"
-        end
-      end
-    end
   end
 
 end
