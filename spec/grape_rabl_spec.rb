@@ -104,23 +104,26 @@ describe Grape::RablRails do
 
     context "with multiple actions" do
       before do
-        subject.namespace :foo, rabl: 'bar' do
-          get '/foo' do
+        subject.namespace :foo do
+          get '/foo', rabl: 'bar' do
             @quux = OpenStruct.new(fooed: 'yay', bared: 'nay')
           end
-          get '/bar' do
+          get '/bar', rabl: 'bar' do
             @quux = OpenStruct.new(fooed: 'nay', bared: 'yay')
           end
           get '/ping', rabl: false do
             'pong'
           end
+        end
+
+        subject.namespace :bar, rabl: 'other' do
           get '/admin', rabl: 'user' do
-            @user = OpenStruct.new(name: 'vjt', fooity: 42)
+            OpenStruct.new(name: 'vjt', coolness: 'average', level: 42)
           end
         end
       end
 
-      it "allows setting the rabl template name on the namespace" do
+      it "allows setting the rabl template namespace" do
         get '/foo/foo'
         last_response.body.should == '{"quux":{"fooed":"yay","bared":"nay"}}'
 
@@ -134,9 +137,38 @@ describe Grape::RablRails do
       end
 
       it "allows specifying a different template on an action" do
-        get '/foo/admin'
-        last_response.body.should == '{"user":{"name":"vjt","fooity":42}}'
+        get '/bar/admin'
+        last_response.body.should == '{"user":{"name":"vjt","coolness":"average","level":42}}'
       end
+    end
+
+    context "with nested namespaces" do
+      before do
+        subject.namespace :foo do
+          namespace '/:id/bar' do
+            get '/user', rabl: 'user' do
+              OpenStruct.new(name: 'amedeo', nested: 'fully')
+            end
+          end
+
+          namespace '/:id', rabl: 'bar' do
+            get '/user', rabl: 'user' do
+              OpenStruct.new(name: 'ivan', nested: 'customly')
+            end
+          end
+        end
+      end
+
+      it 'concatenates components, skipping the param routes' do
+        get '/foo/3/bar/user'
+        last_response.body.should == '{"user":{"name":"amedeo","nested":"fully"}}'
+      end
+
+      it 'allows overriding a sub-namespace name' do
+        get '/foo/3/user'
+        last_response.body.should == '{"user":{"name":"ivan","nested":"customly"}}'
+      end
+
     end
   end
 

@@ -28,31 +28,36 @@ module Grape
       private
 
       def extract_template(endpoint)
-        route_opts = endpoint.options[:route_options]
-        namespace  = endpoint.settings[:namespace]
-
-        template = extract_from_route_options(route_opts)
-        return if template === false
-
-        template ||= extract_from_namespace(namespace)
+        template = extract_from_route_options(endpoint)
         return unless template
 
         # Concatenate the namespace, unless the template starts with '/'
         #
-        if namespace && template[0] != '/'
-          template = File.join(namespace.space, template)
+        namespace = compute_namespace(endpoint)
+        if namespace && template && template[0] != '/'
+          template = File.join(namespace, template)
         end
 
         return template
       end
 
 
-      def extract_from_route_options(options)
+      def extract_from_route_options(endpoint)
+        options = endpoint.options[:route_options]
         options.fetch(:rabl) if options.key?(:rabl)
       end
 
-      def extract_from_namespace(namespace)
-        namespace.options.fetch(:rabl) if namespace && namespace.options.key?(:rabl)
+      def compute_namespace(endpoint)
+        namespace = endpoint.settings.stack.inject([]) do |result, item|
+          result.tap do
+            if (ns = item[:namespace])
+              result << (ns.options[:rabl] ||
+                         ns.space.sub(/\/:\w+/, ''))
+            end
+          end
+        end
+
+        namespace.join('/') unless namespace.size.zero?
       end
 
       # Re-implement RablRails Library for now - better solutions have to be
