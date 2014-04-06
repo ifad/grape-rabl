@@ -66,7 +66,7 @@ module Grape
       #
       class Library
         # HACK override RablRails' Library for now
-        ::RablRails::Library = self
+        silence_warnings { ::RablRails::Library = self } # FIXME FIXME FIXME
 
         include Singleton
 
