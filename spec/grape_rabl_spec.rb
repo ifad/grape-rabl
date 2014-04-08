@@ -192,4 +192,17 @@ describe Grape::RablRails do
     end
   end
 
+  context 'conditional rabl rendering' do
+    before do
+      subject.get '/foo', rabl: 'result', rabl_if: :present?.to_proc do
+        nil
+      end
+    end
+
+    it "doesn't rabl" do
+      get '/foo.json'
+      last_response.body.should == 'null'
+    end
+  end
+
 end

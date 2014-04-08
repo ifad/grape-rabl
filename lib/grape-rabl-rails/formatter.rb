@@ -15,7 +15,7 @@ module Grape
 
         endpoint.instance_variable_set(:@result, block_retval)
 
-        if (template = extract_template(endpoint))
+        if (template = extract_template(endpoint)) && should_rabl(endpoint, block_retval)
           Library.on_view_root(@view_root) do
             Library.instance.render template, context: endpoint, format: format
           end
@@ -41,7 +41,6 @@ module Grape
         return template
       end
 
-
       def extract_from_route_options(endpoint)
         options = endpoint.options[:route_options]
         options.fetch(:rabl) if options.key?(:rabl)
@@ -58,6 +57,11 @@ module Grape
         end
 
         namespace.join('/') unless namespace.size.zero?
+      end
+
+      def should_rabl(endpoint, block_retval)
+        checker = endpoint.options[:route_options].fetch(:rabl_if, nil)
+        checker ? checker.call(block_retval) : true
       end
 
       # Re-implement RablRails Library for now - better solutions have to be
