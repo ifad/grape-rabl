@@ -15,7 +15,7 @@ module Grape
 
         endpoint.instance_variable_set(:@result, block_retval)
 
-        if (template = extract_template(endpoint)) && should_rabl(endpoint, block_retval)
+        if (template = extract_template(endpoint, env)) && should_rabl(endpoint, block_retval)
           Library.on_view_root(@view_root) do
             Library.instance.render template, context: endpoint, format: format
           end
@@ -27,8 +27,10 @@ module Grape
 
       private
 
-      def extract_template(endpoint)
-        template = extract_from_route_options(endpoint)
+      def extract_template(endpoint, env)
+        template = extract_from_env(env) ||
+          extract_from_route_options(endpoint)
+
         return unless template
 
         # Concatenate the namespace, unless the template starts with '/'
@@ -39,6 +41,10 @@ module Grape
         end
 
         return template
+      end
+
+      def extract_from_env(env)
+        env['api.rabl']
       end
 
       def extract_from_route_options(endpoint)
