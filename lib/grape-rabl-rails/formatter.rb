@@ -53,12 +53,9 @@ module Grape
       end
 
       def compute_namespace(endpoint)
-        namespace = endpoint.settings.stack.inject([]) do |result, item|
+        namespace = endpoint.namespace_stackable(:namespace).inject([]) do |result, ns|
           result.tap do
-            if (ns = item[:namespace])
-              result << (ns.options[:rabl] ||
-                         ns.space.sub(/\/:\w+/, ''))
-            end
+            result << (ns.options[:rabl] || ns.space.sub(/\/:\w+/, ''))
           end
         end
 

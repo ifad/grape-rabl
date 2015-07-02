@@ -16,7 +16,7 @@ Gem::Specification.new do |gem|
   gem.version       = Grape::RablRails::VERSION
   gem.required_ruby_version = '>= 1.9.3'
 
-  gem.add_dependency "grape"
+  gem.add_dependency "grape", '>= 0.12.0'
   gem.add_dependency "rabl-rails"
   gem.add_dependency "i18n"
 end
