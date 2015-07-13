@@ -2,8 +2,7 @@ source 'https://rubygems.org'
 
 gemspec
 
-gem "grape",      github: "intridea/grape"
-gem "rabl-rails", github: "ifad/rabl-rails", ref: 'e75c74e21ba73f2c83c63206620877e62d13350a'
+gem 'rabl-rails', github: 'ifad/rabl-rails'
 
 group :test do
   gem "json", '~> 1.7.7'

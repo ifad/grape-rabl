@@ -16,9 +16,8 @@ module Grape
         endpoint.instance_variable_set(:@result, block_retval)
 
         if (template = extract_template(endpoint, env)) && should_rabl(endpoint, block_retval)
-          Library.on_view_root(@view_root) do
-            Library.instance.render template, context: endpoint, format: format
-          end
+          render template, format, endpoint
+
         else
           fallback = Grape::Formatter.const_get(format.to_s.capitalize)
           fallback.call(block_retval, env)
@@ -67,75 +66,46 @@ module Grape
         checker ? checker.call(block_retval) : true
       end
 
-      # Re-implement RablRails Library for now - better solutions have to be
-      # envisioned by refactoring RablRails' Library itself and decoupling it
-      # from Rails' internals.
-      #
-      class Library
-        # HACK override RablRails' Library for now
-        silence_warnings { ::RablRails::Library = self } # FIXME FIXME FIXME
+      def render(template, format, endpoint)
+        context  = Context.new(@view_root, template, format, endpoint)
+        compiled = context.find_template(template)
 
-        include Singleton
+        ::RablRails::Library.instance.get_rendered_template(compiled, context)
+      end
 
-        def initialize
-          @cache = {}
+      class Context
+        def initialize(view_root, template, format, endpoint)
+          @view_root    = view_root
+          @virtual_path = template
+          @format       = format
+          @endpoint     = endpoint
+
+          @_assigns     = endpoint_instance_variables
         end
 
-        def render(template, options)
-          template = compile(template)
-          format   = options.fetch(:format, 'JSON').to_s.upcase
-          context  = options.fetch(:context)
-
-          ::RablRails::Renderers.const_get(format).new(context).render(template)
+        def find_template(template)
+          template = lookup_context.find_template(template, [], false)
+          return template.source if template
         end
 
-        def compile(template)
-          path = _lookup(template.to_s)
-
-          if ::RablRails.cache_templates?
-            (@cache[path] ||= _compile(path)).dup
-          else
-            _compile(path)
-          end
+        def lookup_context
+          @_lookup_context ||= ::RablRails::Renderer::LookupContext.new(@view_root, @format)
         end
 
-        # Compatibility for Partial rendering
-        alias :compile_template_from_path :compile
+        def respond_to?(meth)
+          @endpoint.respond_to?(meth)
+        end
 
         private
-        def _compile(path)
-          ::RablRails::Compiler.new.compile_source(File.read(path))
+          def endpoint_instance_variables
+            @endpoint.instance_variables.inject({}) do |h, name|
+              h.update(name.to_s.sub('@', '') => @endpoint.instance_variable_get(name))
+            end
+          end
 
-        rescue Errno::ENOENT
-          raise TemplateNotFound.new(path)
-        end
-
-        def _lookup(template)
-          template += '.rabl' unless template =~ /\.rabl\Z/
-          File.join(Thread.current['grape.rabl.root'], template)
-        end
-
-        def self.on_view_root(root)
-          # Better this than having race conditions due
-          # to instance variables in the Singleton
-          Thread.current['grape.rabl.root'] = root
-          yield
-        ensure
-          Thread.current['grape.rabl.root'] = nil
-        end
-      end
-
-      class ConfigurationError < StandardError
-      end
-
-      class TemplateNotFound < StandardError
-        def initialize(path)
-          @path = path
-        end
-
-        def message
-          "Template not found: #@path"
-        end
+          def method_missing(meth, *args, &block)
+            @endpoint.public_send(meth, *args, &block)
+          end
       end
 
     end
